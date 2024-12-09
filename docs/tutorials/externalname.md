@@ -1,4 +1,4 @@
-# ExternalName Services
+# Setting up ExternalDNS for ExternalName Services
 
 This tutorial describes how to setup ExternalDNS for usage in conjunction with an ExternalName service.
 
@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: external-dns
-        image: registry.k8s.io/external-dns/external-dns:v0.15.0
+        image: registry.k8s.io/external-dns/external-dns:v0.14.2
         args:
         - --log-level=debug
         - --source=service

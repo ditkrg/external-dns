@@ -95,7 +95,7 @@ func getSupportedTypes() []string {
 	return []string{endpoint.RecordTypeA, endpoint.RecordTypeAAAA, endpoint.RecordTypeCNAME, endpoint.RecordTypeNS}
 }
 
-func (im *TXTRegistry) GetDomainFilter() endpoint.DomainFilterInterface {
+func (im *TXTRegistry) GetDomainFilter() endpoint.DomainFilter {
 	return im.provider.GetDomainFilter()
 }
 
@@ -406,9 +406,6 @@ func (pr affixNameMapper) toEndpointName(txtDNSName string) (endpointName string
 		domainWithSuffix := strings.Join(DNSName[:1+dc], ".")
 
 		r, rType := pr.dropAffixExtractType(domainWithSuffix)
-		if !strings.Contains(lowerDNSName, ".") {
-			return r, rType
-		}
 		return r + "." + DNSName[1+dc], rType
 	}
 	return "", ""

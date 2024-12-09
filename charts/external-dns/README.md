@@ -1,6 +1,6 @@
 # external-dns
 
-![Version: 1.15.0](https://img.shields.io/badge/Version-1.15.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.15.0](https://img.shields.io/badge/AppVersion-0.15.0-informational?style=flat-square)
+![Version: 1.14.5](https://img.shields.io/badge/Version-1.14.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.14.2](https://img.shields.io/badge/AppVersion-0.14.2-informational?style=flat-square)
 
 ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
 
@@ -27,7 +27,7 @@ helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
 After you've installed the repo you can install the chart.
 
 ```shell
-helm upgrade --install external-dns external-dns/external-dns --version 1.15.0
+helm upgrade --install external-dns external-dns/external-dns --version 1.14.5
 ```
 
 ## Providers
@@ -52,6 +52,7 @@ For set up for a specific provider using the Helm chart, see the following links
 - [godaddy](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/godaddy.md#using-helm)
 - [ns1](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/ns1.md#using-helm)
 - [plural](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/plural.md#using-helm)
+- [vultr](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/vultr.md#using-helm)
 
 ## Namespaced Scoped Installation
 
@@ -97,26 +98,23 @@ If `namespaced` is set to `true`, please ensure that `sources` my only contains 
 | deploymentStrategy | object | `{"type":"Recreate"}` | [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy). |
 | dnsConfig | object | `nil` | [DNS config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config) for the pod, if not set the default will be used. |
 | dnsPolicy | string | `nil` | [DNS policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy) for the pod, if not set the default will be used. |
-| domainFilters | list | `[]` | Limit possible target zones by domain suffixes. |
+| domainFilters | list | `[]` |  |
 | env | list | `[]` | [Environment variables](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/) for the `external-dns` container. |
-| excludeDomains | list | `[]` | Intentionally exclude domains from being managed. |
+| excludeDomains | list | `[]` |  |
 | extraArgs | list | `[]` | Extra arguments to provide to _ExternalDNS_. |
 | extraContainers | object | `{}` | Extra containers to add to the `Deployment`. |
 | extraVolumeMounts | list | `[]` | Extra [volume mounts](https://kubernetes.io/docs/concepts/storage/volumes/) for the `external-dns` container. |
 | extraVolumes | list | `[]` | Extra [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) for the `Pod`. |
 | fullnameOverride | string | `nil` | Override the full name of the chart. |
-| global.imagePullSecrets | list | `[]` | Global image pull secrets. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for the `external-dns` container. |
 | image.repository | string | `"registry.k8s.io/external-dns/external-dns"` | Image repository for the `external-dns` container. |
 | image.tag | string | `nil` | Image tag for the `external-dns` container, this will default to `.Chart.AppVersion` if not set. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
 | initContainers | list | `[]` | [Init containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to add to the `Pod` definition. |
 | interval | string | `"1m"` | Interval for DNS updates. |
-| labelFilter | string | `nil` | Filter resources queried for endpoints by label selector |
 | livenessProbe | object | See _values.yaml_ | [Liveness probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) configuration for the `external-dns` container. |
 | logFormat | string | `"text"` | Log format. |
 | logLevel | string | `"info"` | Log level. |
-| managedRecordTypes | list | `[]` | Record types to manage (default: A, AAAA, CNAME) |
 | nameOverride | string | `nil` | Override the name of the chart. |
 | namespaced | bool | `false` | if `true`, _ExternalDNS_ will run in a namespaced scope (`Role`` and `Rolebinding`` will be namespaced too). |
 | nodeSelector | object | `{}` | Node labels to match for `Pod` [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/). |
@@ -136,7 +134,6 @@ If `namespaced` is set to `true`, please ensure that `sources` my only contains 
 | provider.webhook.readinessProbe | object | See _values.yaml_ | [Readiness probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) configuration for the `webhook` container. |
 | provider.webhook.resources | object | `{}` | [Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for the `webhook` container. |
 | provider.webhook.securityContext | object | See _values.yaml_ | [Pod security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) for the `webhook` container. |
-| provider.webhook.service.port | int | `8080` | Webhook exposed HTTP port for the service. |
 | provider.webhook.serviceMonitor | object | See _values.yaml_ | Optional [Service Monitor](https://prometheus-operator.dev/docs/operator/design/#servicemonitor) configuration for the `webhook` container. |
 | rbac.additionalPermissions | list | `[]` | Additional rules to add to the `ClusterRole`. |
 | rbac.create | bool | `true` | If `true`, create a `ClusterRole` & `ClusterRoleBinding` with access to the Kubernetes API. |

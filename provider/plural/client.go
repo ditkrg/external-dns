@@ -23,7 +23,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/pluralsh/gqlclient"
 	"github.com/pluralsh/gqlclient/pkg/utils"
 )
@@ -77,7 +76,7 @@ func NewClient(conf *Config) (Client, error) {
 	endpoint := base + "/gql"
 	return &client{
 		ctx:          context.Background(),
-		pluralClient: gqlclient.NewClient(&httpClient, endpoint, &clientv2.Options{}),
+		pluralClient: gqlclient.NewClient(&httpClient, endpoint),
 		config:       conf,
 	}, nil
 }

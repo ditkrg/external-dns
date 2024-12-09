@@ -2,6 +2,7 @@ site_name: external-dns
 site_author: external-dns maintainers
 repo_name: kubernetes-sigs/external-dns
 repo_url: https://github.com/kubernetes-sigs/external-dns/
+trademark: https://www.linuxfoundation.org/legal/trademark-usage
 
 docs_dir: .
 
@@ -18,7 +19,11 @@ nav:
   - Tutorials: docs/tutorials/*
   - Annotations:
     - About: docs/annotations/annotations.md
-  - Sources: docs/sources/*
+  - Sources:
+    - About: docs/sources/sources.md
+    - Gateway: docs/sources/gateway.md
+    - Ingress: docs/sources/ingress.md
+    - Service: docs/sources/service.md
   - Registries:
     - About: docs/registry/registry.md
     - TXT: docs/registry/txt.md
@@ -26,9 +31,7 @@ nav:
   - Advanced Topics:
       - Initial Design: docs/initial-design.md
       - TTL: docs/ttl.md
-      - NAT64: docs/nat64.md
       - MultiTarget: docs/proposal/multi-target.md
-      - Rate Limits: docs/rate-limits.md
   - Contributing:
       - Kubernetes Contributions: CONTRIBUTING.md
       - Release: docs/release.md

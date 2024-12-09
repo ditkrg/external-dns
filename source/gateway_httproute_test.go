@@ -27,7 +27,6 @@ import (
 	kubefake "k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/external-dns/endpoint"
 	v1 "sigs.k8s.io/gateway-api/apis/v1"
-	v1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	gatewayfake "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned/fake"
 )
 
@@ -136,8 +135,8 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 		title      string
 		config     Config
 		namespaces []*corev1.Namespace
-		gateways   []*v1beta1.Gateway
-		routes     []*v1beta1.HTTPRoute
+		gateways   []*v1.Gateway
+		routes     []*v1.HTTPRoute
 		endpoints  []*endpoint.Endpoint
 	}{
 		{
@@ -146,7 +145,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				GatewayNamespace: "gateway-namespace",
 			},
 			namespaces: namespaces("gateway-namespace", "not-gateway-namespace", "route-namespace"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: objectMeta("gateway-namespace", "test"),
 					Spec: v1.GatewaySpec{
@@ -165,7 +164,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("2.3.4.5"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("route-namespace", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.example.internal"),
@@ -185,7 +184,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				Namespace: "route-namespace",
 			},
 			namespaces: namespaces("gateway-namespace", "route-namespace", "not-route-namespace"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("gateway-namespace", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -195,7 +194,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: objectMeta("route-namespace", "test"),
 					Spec: v1.HTTPRouteSpec{
@@ -221,7 +220,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				GatewayLabelFilter: "foo=bar",
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "labels-match",
@@ -245,7 +244,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("2.3.4.5"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.example.internal"),
@@ -265,14 +264,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				LabelFilter: mustGetLabelSelector("foo=bar"),
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "labels-match",
@@ -306,14 +305,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				AnnotationFilter: "foo=bar",
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        "annotations-match",
@@ -345,14 +344,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "SkipControllerAnnotation",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "api",
 					Namespace: "default",
@@ -371,7 +370,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "MultipleGateways",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: objectMeta("default", "one"),
 					Spec: v1.GatewaySpec{
@@ -387,7 +386,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("2.3.4.5"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.example.internal"),
@@ -405,7 +404,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "MultipleListeners",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "one"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{
@@ -423,7 +422,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("*.example.internal"),
@@ -441,7 +440,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "SectionNameMatch",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{
@@ -459,7 +458,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("*.example.internal"),
@@ -477,7 +476,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "PortNumberMatch",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{
@@ -503,7 +502,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("*.example.internal"),
@@ -521,7 +520,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "WildcardInGateway",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -531,7 +530,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "no-hostname"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: []v1.Hostname{
@@ -548,7 +547,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "WildcardInRoute",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -558,7 +557,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "no-hostname"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: []v1.Hostname{
@@ -575,7 +574,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "WildcardInRouteAndGateway",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -585,7 +584,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "no-hostname"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: []v1.Hostname{
@@ -602,7 +601,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "NoRouteHostname",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -612,7 +611,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "no-hostname"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: nil,
@@ -628,7 +627,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			config:     Config{},
 			namespaces: namespaces("default"),
 			gateways:   nil,
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("example.internal"),
@@ -641,14 +640,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "NoHostnames",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "no-hostname"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: nil,
@@ -661,14 +660,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "HostnameAnnotation",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "without-hostame",
@@ -708,14 +707,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				IgnoreHostnameAnnotation: true,
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "with-hostame",
 					Namespace: "default",
@@ -738,14 +737,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				FQDNTemplate: "{{.Name}}.zero.internal, {{.Name}}.one.internal. ,  {{.Name}}.two.internal  ",
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: objectMeta("default", "fqdn-with-hostnames"),
 					Spec: v1.HTTPRouteSpec{
@@ -775,14 +774,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				CombineFQDNAndAnnotation: true,
 			},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "fqdn-with-hostnames"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("fqdn-with-hostnames.internal"),
@@ -798,14 +797,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "TTL",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        "valid-ttl",
@@ -838,14 +837,14 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "ProviderAnnotations",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{Protocol: v1.HTTPProtocolType}},
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "provider-annotations",
 					Namespace: "default",
@@ -869,7 +868,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "DifferentHostnameDifferentGateway",
 			config:     Config{},
 			namespaces: namespaces("default"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: objectMeta("default", "one"),
 					Spec: v1.GatewaySpec{
@@ -891,7 +890,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("2.3.4.5"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.one.internal", "test.two.internal"),
@@ -910,7 +909,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "AllowedRoutesSameNamespace",
 			config:     Config{},
 			namespaces: namespaces("same-namespace", "other-namespace"),
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("same-namespace", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -924,7 +923,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: objectMeta("same-namespace", "test"),
 					Spec: v1.HTTPRouteSpec{
@@ -966,7 +965,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					},
 				},
 			},
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -983,7 +982,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{
+			routes: []*v1.HTTPRoute{
 				{
 					ObjectMeta: objectMeta("foo", "test"),
 					Spec: v1.HTTPRouteSpec{
@@ -1007,7 +1006,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			title:      "MissingNamespace",
 			config:     Config{},
 			namespaces: nil,
-			gateways: []*v1beta1.Gateway{{
+			gateways: []*v1.Gateway{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.GatewaySpec{
 					Listeners: []v1.Listener{{
@@ -1025,7 +1024,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				},
 				Status: gatewayStatus("1.2.3.4"),
 			}},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("default", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("example.internal"),
@@ -1040,7 +1039,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				GatewayNamespace: "gateway-namespace",
 			},
 			namespaces: namespaces("gateway-namespace", "route-namespace"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "overriden-gateway",
@@ -1058,7 +1057,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("1.2.3.4"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("route-namespace", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.example.internal"),
@@ -1077,7 +1076,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 				GatewayNamespace: "gateway-namespace",
 			},
 			namespaces: namespaces("gateway-namespace", "route-namespace"),
-			gateways: []*v1beta1.Gateway{
+			gateways: []*v1.Gateway{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "overriden-gateway",
@@ -1105,7 +1104,7 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 					Status: gatewayStatus("2.3.4.5"),
 				},
 			},
-			routes: []*v1beta1.HTTPRoute{{
+			routes: []*v1.HTTPRoute{{
 				ObjectMeta: objectMeta("route-namespace", "test"),
 				Spec: v1.HTTPRouteSpec{
 					Hostnames: hostnames("test.example.internal"),
@@ -1128,12 +1127,12 @@ func TestGatewayHTTPRouteSourceEndpoints(t *testing.T) {
 			ctx := context.Background()
 			gwClient := gatewayfake.NewSimpleClientset()
 			for _, gw := range tt.gateways {
-				_, err := gwClient.GatewayV1beta1().Gateways(gw.Namespace).Create(ctx, gw, metav1.CreateOptions{})
+				_, err := gwClient.GatewayV1().Gateways(gw.Namespace).Create(ctx, gw, metav1.CreateOptions{})
 				require.NoError(t, err, "failed to create Gateway")
 
 			}
 			for _, rt := range tt.routes {
-				_, err := gwClient.GatewayV1beta1().HTTPRoutes(rt.Namespace).Create(ctx, rt, metav1.CreateOptions{})
+				_, err := gwClient.GatewayV1().HTTPRoutes(rt.Namespace).Create(ctx, rt, metav1.CreateOptions{})
 				require.NoError(t, err, "failed to create HTTPRoute")
 			}
 			kubeClient := kubefake.NewSimpleClientset()

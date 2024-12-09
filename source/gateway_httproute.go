@@ -20,15 +20,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "sigs.k8s.io/gateway-api/apis/v1"
-	v1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	informers "sigs.k8s.io/gateway-api/pkg/client/informers/externalversions"
-	informers_v1beta1 "sigs.k8s.io/gateway-api/pkg/client/informers/externalversions/apis/v1beta1"
+	informers_v1 "sigs.k8s.io/gateway-api/pkg/client/informers/externalversions/apis/v1"
 )
 
 // NewGatewayHTTPRouteSource creates a new Gateway HTTPRoute source with the given config.
 func NewGatewayHTTPRouteSource(clients ClientGenerator, config *Config) (Source, error) {
 	return newGatewayRouteSource(clients, config, "HTTPRoute", func(factory informers.SharedInformerFactory) gatewayRouteInformer {
-		return &gatewayHTTPRouteInformer{factory.Gateway().V1beta1().HTTPRoutes()}
+		return &gatewayHTTPRouteInformer{factory.Gateway().V1().HTTPRoutes()}
 	})
 }
 
@@ -41,7 +40,7 @@ func (rt *gatewayHTTPRoute) Protocol() v1.ProtocolType    { return v1.HTTPProtoc
 func (rt *gatewayHTTPRoute) RouteStatus() v1.RouteStatus  { return rt.route.Status.RouteStatus }
 
 type gatewayHTTPRouteInformer struct {
-	informers_v1beta1.HTTPRouteInformer
+	informers_v1.HTTPRouteInformer
 }
 
 func (inf gatewayHTTPRouteInformer) List(namespace string, selector labels.Selector) ([]gatewayRoute, error) {
@@ -55,10 +54,10 @@ func (inf gatewayHTTPRouteInformer) List(namespace string, selector labels.Selec
 		// We make a shallow copy since we're only interested in setting the TypeMeta.
 		clone := *rt
 		clone.TypeMeta = metav1.TypeMeta{
-			APIVersion: v1beta1.GroupVersion.String(),
+			APIVersion: v1.GroupVersion.String(),
 			Kind:       "HTTPRoute",
 		}
-		routes[i] = &gatewayHTTPRoute{v1.HTTPRoute(clone)}
+		routes[i] = &gatewayHTTPRoute{clone}
 	}
 	return routes, nil
 }

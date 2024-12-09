@@ -238,7 +238,6 @@ func newAzurePrivateDNSProvider(domainFilter endpoint.DomainFilter, zoneNameFilt
 		dryRun:           dryRun,
 		resourceGroup:    resourceGroup,
 		zonesClient:      privateZonesClient,
-		zonesCache:       &zonesCache[privatedns.PrivateZone]{duration: 0},
 		recordSetsClient: privateRecordsClient,
 	}
 }

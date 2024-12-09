@@ -19,7 +19,8 @@ package provider
 import (
 	"testing"
 
-	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/route53"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -27,8 +28,8 @@ import (
 func TestZoneTypeFilterMatch(t *testing.T) {
 	publicZoneStr := "public"
 	privateZoneStr := "private"
-	publicZoneAWS := route53types.HostedZone{Config: &route53types.HostedZoneConfig{PrivateZone: false}}
-	privateZoneAWS := route53types.HostedZone{Config: &route53types.HostedZoneConfig{PrivateZone: true}}
+	publicZoneAWS := &route53.HostedZone{Config: &route53.HostedZoneConfig{PrivateZone: aws.Bool(false)}}
+	privateZoneAWS := &route53.HostedZone{Config: &route53.HostedZoneConfig{PrivateZone: aws.Bool(true)}}
 
 	for _, tc := range []struct {
 		zoneTypeFilter string
@@ -36,10 +37,10 @@ func TestZoneTypeFilterMatch(t *testing.T) {
 		zones          []interface{}
 	}{
 		{
-			"", true, []interface{}{publicZoneStr, privateZoneStr, route53types.HostedZone{}},
+			"", true, []interface{}{publicZoneStr, privateZoneStr, &route53.HostedZone{}},
 		},
 		{
-			"public", true, []interface{}{publicZoneStr, publicZoneAWS, route53types.HostedZone{}},
+			"public", true, []interface{}{publicZoneStr, publicZoneAWS, &route53.HostedZone{}},
 		},
 		{
 			"public", false, []interface{}{privateZoneStr, privateZoneAWS},
@@ -48,17 +49,15 @@ func TestZoneTypeFilterMatch(t *testing.T) {
 			"private", true, []interface{}{privateZoneStr, privateZoneAWS},
 		},
 		{
-			"private", false, []interface{}{publicZoneStr, publicZoneAWS, route53types.HostedZone{}},
+			"private", false, []interface{}{publicZoneStr, publicZoneAWS, &route53.HostedZone{}},
 		},
 		{
 			"unknown", false, []interface{}{publicZoneStr},
 		},
 	} {
-		t.Run(tc.zoneTypeFilter, func(t *testing.T) {
-			zoneTypeFilter := NewZoneTypeFilter(tc.zoneTypeFilter)
-			for _, zone := range tc.zones {
-				assert.Equal(t, tc.matches, zoneTypeFilter.Match(zone))
-			}
-		})
+		zoneTypeFilter := NewZoneTypeFilter(tc.zoneTypeFilter)
+		for _, zone := range tc.zones {
+			assert.Equal(t, tc.matches, zoneTypeFilter.Match(zone))
+		}
 	}
 }

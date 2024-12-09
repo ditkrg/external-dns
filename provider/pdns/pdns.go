@@ -22,7 +22,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"net"
 	"net/http"
@@ -44,7 +43,9 @@ type pdnsChangeType string
 const (
 	apiBase = "/api/v1"
 
-	defaultTTL = 300
+	// Unless we use something like pdnsproxy (discontinued upstream), this value will _always_ be localhost
+	defaultServerID = "localhost"
+	defaultTTL      = 300
 
 	// PdnsDelete and PdnsReplace are effectively an enum for "pgo.RrSet.changetype"
 	// TODO: Can we somehow get this from the pgo swagger client library itself?
@@ -65,7 +66,6 @@ type PDNSConfig struct {
 	DomainFilter endpoint.DomainFilter
 	DryRun       bool
 	Server       string
-	ServerID     string
 	APIKey       string
 	TLSConfig    TLSConfig
 }
@@ -137,7 +137,6 @@ type PDNSAPIProvider interface {
 // PDNSAPIClient : Struct that encapsulates all the PowerDNS specific implementation details
 type PDNSAPIClient struct {
 	dryRun       bool
-	serverID     string
 	authCtx      context.Context
 	client       *pgo.APIClient
 	domainFilter endpoint.DomainFilter
@@ -147,7 +146,7 @@ type PDNSAPIClient struct {
 // ref: https://doc.powerdns.com/authoritative/http-api/zone.html#get--servers-server_id-zones
 func (c *PDNSAPIClient) ListZones() (zones []pgo.Zone, resp *http.Response, err error) {
 	for i := 0; i < retryLimit; i++ {
-		zones, resp, err = c.client.ZonesApi.ListZones(c.authCtx, c.serverID)
+		zones, resp, err = c.client.ZonesApi.ListZones(c.authCtx, defaultServerID)
 		if err != nil {
 			log.Debugf("Unable to fetch zones %v", err)
 			log.Debugf("Retrying ListZones() ... %d", i)
@@ -157,7 +156,8 @@ func (c *PDNSAPIClient) ListZones() (zones []pgo.Zone, resp *http.Response, err 
 		return zones, resp, err
 	}
 
-	return zones, resp, provider.NewSoftError(fmt.Errorf("unable to list zones: %v", err))
+	log.Errorf("Unable to fetch zones. %v", err)
+	return zones, resp, err
 }
 
 // PartitionZones : Method returns a slice of zones that adhere to the domain filter and a slice of ones that does not adhere to the filter
@@ -180,7 +180,7 @@ func (c *PDNSAPIClient) PartitionZones(zones []pgo.Zone) (filteredZones []pgo.Zo
 // ref: https://doc.powerdns.com/authoritative/http-api/zone.html#get--servers-server_id-zones-zone_id
 func (c *PDNSAPIClient) ListZone(zoneID string) (zone pgo.Zone, resp *http.Response, err error) {
 	for i := 0; i < retryLimit; i++ {
-		zone, resp, err = c.client.ZonesApi.ListZone(c.authCtx, c.serverID, zoneID)
+		zone, resp, err = c.client.ZonesApi.ListZone(c.authCtx, defaultServerID, zoneID)
 		if err != nil {
 			log.Debugf("Unable to fetch zone %v", err)
 			log.Debugf("Retrying ListZone() ... %d", i)
@@ -190,14 +190,15 @@ func (c *PDNSAPIClient) ListZone(zoneID string) (zone pgo.Zone, resp *http.Respo
 		return zone, resp, err
 	}
 
-	return zone, resp, provider.NewSoftError(fmt.Errorf("unable to list zone: %v", err))
+	log.Errorf("Unable to list zone. %v", err)
+	return zone, resp, err
 }
 
 // PatchZone : Method used to update the contents of a particular zone from PowerDNS
 // ref: https://doc.powerdns.com/authoritative/http-api/zone.html#patch--servers-server_id-zones-zone_id
 func (c *PDNSAPIClient) PatchZone(zoneID string, zoneStruct pgo.Zone) (resp *http.Response, err error) {
 	for i := 0; i < retryLimit; i++ {
-		resp, err = c.client.ZonesApi.PatchZone(c.authCtx, c.serverID, zoneID, zoneStruct)
+		resp, err = c.client.ZonesApi.PatchZone(c.authCtx, defaultServerID, zoneID, zoneStruct)
 		if err != nil {
 			log.Debugf("Unable to patch zone %v", err)
 			log.Debugf("Retrying PatchZone() ... %d", i)
@@ -207,7 +208,8 @@ func (c *PDNSAPIClient) PatchZone(zoneID string, zoneStruct pgo.Zone) (resp *htt
 		return resp, err
 	}
 
-	return resp, provider.NewSoftError(fmt.Errorf("unable to patch zone: %v", err))
+	log.Errorf("Unable to patch zone. %v", err)
+	return resp, err
 }
 
 // PDNSProvider is an implementation of the Provider interface for PowerDNS
@@ -243,7 +245,6 @@ func NewPDNSProvider(ctx context.Context, config PDNSConfig) (*PDNSProvider, err
 	provider := &PDNSProvider{
 		client: &PDNSAPIClient{
 			dryRun:       config.DryRun,
-			serverID:     config.ServerID,
 			authCtx:      context.WithValue(ctx, pgo.ContextAPIKey, pgo.APIKey{Key: config.APIKey}),
 			client:       pgo.NewAPIClient(pdnsClientConfig),
 			domainFilter: config.DomainFilter,
@@ -313,7 +314,7 @@ func (p *PDNSProvider) ConvertEndpointsToZones(eps []*endpoint.Endpoint, changet
 				records := []pgo.Record{}
 				RecordType_ := ep.RecordType
 				for _, t := range ep.Targets {
-					if ep.RecordType == "CNAME" || ep.RecordType == "ALIAS" || ep.RecordType == "MX" || ep.RecordType == "SRV" {
+					if ep.RecordType == "CNAME" || ep.RecordType == "ALIAS" {
 						t = provider.EnsureTrailingDot(t)
 					}
 					records = append(records, pgo.Record{Content: t})
@@ -334,7 +335,7 @@ func (p *PDNSProvider) ConvertEndpointsToZones(eps []*endpoint.Endpoint, changet
 				// DELETEs explicitly forbid a TTL, therefore only PATCHes need the TTL
 				if changetype == PdnsReplace {
 					if int64(ep.RecordTTL) > int64(math.MaxInt32) {
-						return nil, provider.NewSoftError(fmt.Errorf("value of record TTL overflows, limited to int32"))
+						return nil, errors.New("value of record TTL overflows, limited to int32")
 					}
 					if ep.RecordTTL == 0 {
 						// No TTL was specified for the record, we use the default
@@ -417,7 +418,8 @@ func (p *PDNSProvider) Records(ctx context.Context) (endpoints []*endpoint.Endpo
 	for _, zone := range filteredZones {
 		z, _, err := p.client.ListZone(zone.Id)
 		if err != nil {
-			return nil, provider.NewSoftError(fmt.Errorf("unable to fetch records: %v", err))
+			log.Warnf("Unable to fetch Records")
+			return nil, err
 		}
 
 		for _, rr := range z.Rrsets {
